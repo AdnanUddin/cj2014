@@ -1,4 +1,4 @@
 cj2014
 ======
 
-plz no HH 
+We encourage all forms of HH and discourage any encouragement of HS.
