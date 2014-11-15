@@ -1,0 +1,8 @@
+Questions:
+	Are all pictures headshots facing forward?
+	Is there only going to be one face per image?
+	Are all pictures going to have the same background?
+	Is the picture size the same for all pictures?
+
+	Can we use libraries without specific facial recoginition features of said library?
+	Can we use other AI libraries  (e.g. neural networks library)?
