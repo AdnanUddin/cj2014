@@ -10,5 +10,5 @@ def convert_DB_To_PNG(picturesDir):
 		print "Processing: " + imageFile, filtername
 		im = Image.open(imageFile)
 		im.save(picturesDir+'/'+filtername+'.png','PNG')
-if(__name__ == '__main__')
+if(__name__ == '__main__'):
 	convert_DB_To_PNG("training dataset")
