@@ -42,7 +42,7 @@ for i in xrange(0,height - 1):
 		
 		s.putpixel((j,i), npixel)		
 
-
+print "saving file"
 s.save("normalized.gif")
 	#standard deviation
 
