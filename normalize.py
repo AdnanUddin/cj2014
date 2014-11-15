@@ -3,8 +3,8 @@ import glob, os, math
 
 # test image matrix
 s = Image.open("./training dataset/9_9_.gif")
-um = 100
-ustd = 80
+um = 193.99
+ustd = 3.35
 (width, height) = s.size
 # print s.size 
 # print height
@@ -18,7 +18,8 @@ for j in xrange(0, height -1 ):
 
 # #compare img_data with get pixels
 # for i in xrange(0, width*height - 1)
-	
+mean = []
+
 for i in xrange(0,height - 1):
 	# mean of ith column
 	mean = 100.0;
@@ -26,15 +27,19 @@ for i in xrange(0,height - 1):
 	for j in xrange(0,width- 1):
 		mean += s.getpixel((j,i))
 	mean /= width 
-	# print mean1 - mean2
+	# print mean
 	# get std
 	std = 0.0
 	for j in xrange(0,width -1):
 		std = math.pow(s.getpixel((j,i)) - mean, 2)
+		test_str = '%s , %s' %(j,i)
+		# print test_str	
 
 	std = math.sqrt(std/(width-1))
+	# print std
 	for j in xrange(0,width -1):
 		npixel = (s.getpixel((j,i)) - mean)*ustd/std + um
+		
 		s.putpixel((j,i), npixel)		
 
 
