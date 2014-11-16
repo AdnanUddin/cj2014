@@ -23,6 +23,8 @@ def normalizeImage(s):
 
 	return s
 
+def greyscale(image):
+	return image.convert('LA')
 
 #returns a PIL imgage obj
 def get_Image(imageFile):
@@ -174,7 +176,8 @@ def getFace(image):
 
 def haar_main(image_file_path):
 	img = Image.open(image_file_path)
-	face = normalizeImage(img)
+	face = greyscale(img)
+	face = normalizeImage(face)
 	face = smooth_Image(face)
 	face = sharpen_Image(face,30)
 	face = blur_Image(face)
