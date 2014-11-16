@@ -19,7 +19,6 @@ def reconstruct_im(i, U, s, V):
     return data
 
 def compute_eigenfaces(pics, db):
-    print(pics, db)
     images = glob.glob(os.path.join(pics, '*.gif'))
 
     #fill the array of images
