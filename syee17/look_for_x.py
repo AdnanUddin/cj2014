@@ -19,10 +19,10 @@ def look_for_x(db, image_path):
     eigenface_to_person_json_path = db + "/" + eigenface_to_person_database_relative_path
     eigenface_coefficients_database_path = db + "/" + eigenface_coefficeints_database_relative_path
 
-    print "average_face_image_path: " + average_face_image_path
-    print "eigen_faces_images_by_pixels_path: " + eigen_faces_images_by_pixels_path
-    print "eigenface_to_person_json_path: " + eigenface_to_person_json_path
-    print "eigenface_coefficients_database_path: " + eigenface_coefficients_database_path
+    #print "average_face_image_path: " + average_face_image_path
+    #print "eigen_faces_images_by_pixels_path: " + eigen_faces_images_by_pixels_path
+    #print "eigenface_to_person_json_path: " + eigenface_to_person_json_path
+    #print "eigenface_coefficients_database_path: " + eigenface_coefficients_database_path
 
     avg_pixels = list(Image.open(average_face_image_path).getdata()) #fetch the average image
     difference_face = create_difference_face(image_path, avg_pixels) #create a difference face image
