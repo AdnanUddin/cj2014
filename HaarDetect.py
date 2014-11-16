@@ -13,9 +13,6 @@ def normalizeImage(s):
 
 	(width, height) = s.size
 
-
-
-	print 'max: %s , min: %s' %(max_pixel,min_pixel)
 	new_max = 255.0
 	new_min = 0.0
 	img_v = img_v - min_pixel
@@ -24,8 +21,6 @@ def normalizeImage(s):
 
 	s = Image.fromarray(img_v.astype('uint8'));		
 
-	print "saving file"
-	# s.save('%s.gif'%img_name)
 	return s
 
 
@@ -33,7 +28,6 @@ def normalizeImage(s):
 def get_Image(imageFile):
 	filepath,filename = os.path.split(imageFile)
 	filtername,exts = os.path.splitext(filename)
-	print "Processing: " + imageFile, filtername
 	im = Image.open(imageFile)
 	return im
 
@@ -53,6 +47,12 @@ def more_contrast(image,amount=3):
 	cont_obj = ImageEnhance.Contrast(image)
 	cont_img = cont_obj.enhance(amount)
 	return cont_img
+
+#smooth image
+def smooth_Image(image):
+	return image.filter(ImageFilter.SMOOTH_MORE)
+def blur_Image(image):
+	return image.filter(ImageFilter.BLUR)
 
 #image to vector
 def img_to_vector(image):
@@ -109,27 +109,49 @@ def compare_img_to_eyes(subImage,EyesBox,EyesBoxOffsets):
 
 	return abs(lightSum - darkSum)
 
+#compare image to the hairline
+def compare_img_to_hairline(subImage, HairBox,HairBoxOffsets):
+	#total contrast sums
+	darkSum=0
+	lightSum=0
+
+	x = HairBoxOffsets[0]
+	y = HairBoxOffsets[1]
+	hairH = HairBox[1]
+	hairW = HairBox[0]
+
+	hairDark = subImage[x:(x+hairW),y:(y+hairH)]
+	darkSum = sum(sum(hairDark))
+	
+	hairlight = subImage[x:(x+hairW),(y+hairH):(y+hairH*2)]
+	lightSum = sum(sum(hairlight))
+
+	return abs(lightSum - darkSum)
+
+	
 def get_best_rect(image):
 	x=0	
 	cols = 1
 	
 	sidesBox = (15,30)
 	sidesBoxOffsets = (0,116,FaceBox[0]-sidesBox[0]*2,116)
+	
+	hairBox = (70,20)
+	hairBoxOffsets = (50,0)
 
 	EyesBox = (90,30,10)
-	EyesBoxOffsets = (30,116)
+	EyesBoxOffsets = (30,100)
 
 	imgVector = img_to_vector(image)
 	imgDimensions = imgVector.shape
 	
-	print 'image has size: ' + str(imgDimensions)
-
 	BestScore =0.0
 	BestScoreIndex =0
 	for offset in range(0,imgDimensions[cols]-FaceBox[0]):	
 		subImage = imgVector[:,offset:(offset+FaceBox[x])]
-	#	score = compare_img_to_eyes(subImage,EyesBox,EyesBoxOffsets)
+		#score = compare_img_to_eyes(subImage,EyesBox,EyesBoxOffsets)
 		score = compare_img_to_sides(subImage,sidesBox,sidesBoxOffsets)
+		score += compare_img_to_hairline(subImage,hairBox,hairBoxOffsets)
 		if(score>BestScore):
 			BestScore = score
 			BestScoreOffset = offset
@@ -160,7 +182,9 @@ if(__name__ == '__main__'):
 		print "Processing: " + imageFile, filtername
 		img = Image.open(imageFile)
 		face = normalizeImage(img)
-		face = more_contrast(face,0.01)
-		face = sharpen_Image(face, 30)
+		face = smooth_Image(face)
+		face = sharpen_Image(face,30)
+		face = blur_Image(face)
+		
 		face = getFace(img)
 		face.save('../cropped/'+filtername+'CROPPED.gif')
