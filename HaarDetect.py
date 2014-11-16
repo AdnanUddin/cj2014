@@ -49,41 +49,41 @@ def find_edge(image):
 	return edged_img
 
 #enhace contrast
-def more_contrast(image):
+def more_contrast(image,amount=3):
 	cont_obj = ImageEnhance.Contrast(image)
-	cont_img = cont_obj.enhance(3)
+	cont_img = cont_obj.enhance(amount)
 	return cont_img
 
 #image to vector
 def img_to_vector(image):
 	return np.array(img)
 
-#compare box to image
-def compare_img_to_nose(subImage,NoseBox,NoseBoxOffsets):
+#compare image to sides
+def compare_img_to_sides(subImage,SidesBox,SidesBoxOffsets):
 	#total contrast sums
 	darkSum=0
 	lightSum=0
 	
-	x1=NoseBoxOffsets[0]
-	y1=NoseBoxOffsets[1]
-	x2=NoseBoxOffsets[2]
-	y2=NoseBoxOffsets[3]
+	x1=SidesBoxOffsets[0]
+	y1=SidesBoxOffsets[1]
+	x2=SidesBoxOffsets[2]
+	y2=SidesBoxOffsets[3]
 
-	noseW = NoseBox[0]
-	noseH = NoseBox[1]
+	sidesW = SidesBox[0]
+	sidesH = SidesBox[1]
 
-	noseDark = subImage[y1:(y1+noseH),x1:(x1+noseW)]
-	darkSum = sum(sum(noseDark))
+	sidesDark = subImage[y1:(y1+sidesH),x1:(x1+sidesW)]
+	darkSum = sum(sum(sidesDark))
 
-	noseLight = subImage[y1:(y1+noseH),(x1+noseW):(x1+noseW*2)]
-	lightSum = sum(sum(noseLight))
+	sidesLight = subImage[y1:(y1+sidesH),(x1+sidesW):(x1+sidesW*2)]
+	lightSum = sum(sum(sidesLight))
 
 	
-	noseDark = subImage[y2:(y2+noseH),x2:(x2+noseW)]
-	lightSum += sum(sum(noseDark))
+	sidesDark = subImage[y2:(y2+sidesH),x2:(x2+sidesW)]
+	lightSum += sum(sum(sidesDark))
 
-	noseLight = subImage[y2:(y2+noseH),(x2+noseW):(x2+noseW*2)]
-	darkSum += sum(sum(noseLight))
+	sidesLight = subImage[y2:(y2+sidesH),(x2+sidesW):(x2+sidesW*2)]
+	darkSum += sum(sum(sidesLight))
 
 	return abs(lightSum - darkSum)
 
@@ -113,8 +113,8 @@ def get_best_rect(image):
 	x=0	
 	cols = 1
 	
-	NoseBox = (15,30)
-	NoseBoxOffsets = (0,116,FaceBox[0]-NoseBox[0]*2,116)
+	sidesBox = (15,30)
+	sidesBoxOffsets = (0,116,FaceBox[0]-sidesBox[0]*2,116)
 
 	EyesBox = (90,30,10)
 	EyesBoxOffsets = (30,116)
@@ -129,7 +129,7 @@ def get_best_rect(image):
 	for offset in range(0,imgDimensions[cols]-FaceBox[0]):	
 		subImage = imgVector[:,offset:(offset+FaceBox[x])]
 	#	score = compare_img_to_eyes(subImage,EyesBox,EyesBoxOffsets)
-		score = compare_img_to_nose(subImage,NoseBox,NoseBoxOffsets)
+		score = compare_img_to_sides(subImage,sidesBox,sidesBoxOffsets)
 		if(score>BestScore):
 			BestScore = score
 			BestScoreOffset = offset
@@ -152,7 +152,15 @@ def getFace(image):
 
 if(__name__ == '__main__'):
 	
-	img = get_Image("./test_picture/1_7_.gif")
-	face = getFace(img)
-	face = normalizeImage(face)
-	face.save('croppedFace2.png','PNG')
+	files = glob.glob("training dataset"+"/*.gif")
+
+	for imageFile in files:
+		filepath,filename = os.path.split(imageFile)
+		filtername,exts = os.path.splitext(filename)
+		print "Processing: " + imageFile, filtername
+		img = Image.open(imageFile)
+		face = normalizeImage(img)
+		face = more_contrast(face,0.01)
+		face = sharpen_Image(face, 30)
+		face = getFace(img)
+		face.save('../cropped/'+filtername+'CROPPED.gif')
