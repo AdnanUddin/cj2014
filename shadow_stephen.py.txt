@@ -1,0 +1,36 @@
+from PIL import Image
+import numpy as np
+import glob, os, math, sys
+
+def normalizeImage(s):
+	img_v = np.array(s)
+	max_pixel = img_v.max()
+	min_pixel = img_v.min()
+
+	(width, height) = s.size
+
+	new_max = 255.0
+	new_min = 100.0
+	img_v = img_v - min_pixel
+
+	img_v =  img_v * (new_max - new_min)/(max_pixel - min_pixel) +  new_min
+
+	s = Image.fromarray(img_v.astype('uint8'));		
+
+	return s
+
+def remove_shadow(image_path):
+	original = Image.open(img_path)
+
+	normalized = normalizeImage(original)
+
+	normalized.save('./test_picture/norm.png')
+	original.save('./test_picture/orig.png')
+
+	original_edges = original.filter(ImageFilter.FIND_EDGES)
+	normalized_edges = normalized.filter(ImageFilter.FIND_EDGES)
+
+	original_edges.save('./test_picture/orig_edge.png')
+	normalized_edges.save('./test_picture/norm_edge.png')
+
+remove_shadow(sys.argv[1])

@@ -56,7 +56,7 @@ def blur_Image(image):
 
 #image to vector
 def img_to_vector(image):
-	return np.array(img)
+	return np.array(image)
 
 #compare image to sides
 def compare_img_to_sides(subImage,SidesBox,SidesBoxOffsets):

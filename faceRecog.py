@@ -18,7 +18,8 @@ def check_args():
 		else:
 			return true
 	else:
-		print "Wrong number of arguments"
+		print "Wrong number of arguments + " + str(len(sys.argv[1]))
+		print sys.argv
 		return false
 
 def main():
@@ -27,7 +28,8 @@ def main():
 	image_path = sys.argv[1]
 
 	#below should be a numpy object
-	pre_processed_PIL_image = Image.open(image_path) # replace with shabbir's code
+	#pre_processed_PIL_image = Image.open(image_path) # replace with shabbir's code
+	pre_processed_PIL_image = pre_processing.haar_main(image_path)
 
 	print core_engine.look_for_x_by_object('DB', pre_processed_PIL_image)
     

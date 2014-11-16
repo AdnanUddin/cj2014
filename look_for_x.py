@@ -5,7 +5,7 @@ import sys, json, argparse
 
 execfile("percentage_error.py")
 
-SIZE_X = 320
+SIZE_X = 170
 SIZE_Y = 243
 average_relative_face_image_path = "average.gif"
 eigen_faces_images_by_pixels_relative_path = "U"
@@ -24,6 +24,7 @@ def _look_for_x_core(db, difference_face):
 
     C = np.load(eigenface_coefficients_database_path) #load the coefficients that we will need
 
+    print "computing coefficients"
     input_coefficients = np.dot(U.T, difference_face_vector)
 
     coefficients_error_list = list()
@@ -110,7 +111,7 @@ def main():
 
     print ("Utilizing database: " + db)
 
-    #print look_for_x(db, image_path)
+    print look_for_x_by_path(db, image_path)
 
 if __name__ == '__main__':
     main()

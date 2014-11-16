@@ -1,8 +1,9 @@
 import argparse, glob, os, json, re, numpy as np
+import HaarDetect as pre_processing
 from PIL import Image
 
 #TODO!!! Round 2 pics will be what size?
-SIZE_X = 320
+SIZE_X = 170
 SIZE_Y = 243
 SIZE = (SIZE_X, SIZE_Y)
 
@@ -36,7 +37,8 @@ def compute_eigenfaces(pics, db):
     #fill the array of images
     A = np.zeros((N, SIZE_X*SIZE_Y))
     for i, image in enumerate(images):
-        im = Image.open(image)
+        im = Image.open(image) #do not apply preprocessing
+        im = pre_processing.haar_main(image) #apply preprocessing
         A[i] = list(im.getdata())
 
     #compute and store mean picture
