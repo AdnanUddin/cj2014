@@ -19,6 +19,7 @@ def reconstruct_im(i, U, s, V):
     return data
 
 def compute_eigenfaces(pics, db):
+    print(pics, db)
     images = glob.glob(os.path.join(pics, '*.gif'))
 
     #fill the array of images
@@ -33,7 +34,7 @@ def compute_eigenfaces(pics, db):
     
     #get the difference pictures
     for i in range(A.shape[0]):
-        A[i, :] = A[i, :] - m
+        A[i, :] = abs(A[i, :] - m)
 
     U, s, Vt = np.linalg.svd(A.T, full_matrices = False)
     V = Vt.T
