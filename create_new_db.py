@@ -23,17 +23,18 @@ def reconstruct_im(i, U, s, V):
     S = np.diag(s)
     recon = np.dot(U, np.dot(S, V.T))
 
-    data = re[:, i]
+    data = recon[:, i]
     return data
 
 def compute_eigenfaces(pics, db):
     images = glob.glob(os.path.join(pics, '*.gif'))
+    N = len(images)
 
-    #save the map from index to namnes
+    #save the map from index to names
     save_map(images, db)
 
     #fill the array of images
-    A = np.zeros((len(images), SIZE_X*SIZE_Y))
+    A = np.zeros((N, SIZE_X*SIZE_Y))
     for i, image in enumerate(images):
         im = Image.open(image)
         A[i] = list(im.getdata())
@@ -41,30 +42,33 @@ def compute_eigenfaces(pics, db):
     #compute and store mean picture
     m = A.mean(0)
     save_pic(m, os.path.join(db, 'average.gif'))
-    
+
     #get the difference pictures
-    for i in range(A.shape[0]):
-        A[i, :] = abs(A[i, :] - m)
+    for i in range(N):
+        A[i, :] = A[i, :] - m
+    
+    L = np.dot(A, A.T)
+    w, v = np.linalg.eig(L)
+    v = np.real(v) #discard the imaginary numbers
 
-    U, s, Vt = np.linalg.svd(A.T, full_matrices = False)
-    V = Vt.T
+    U = np.dot(A.T, v)
 
-    #sort eigenfaces by order of importance
-    #ind = np.argsort(s)[::-1]
-    #U = U[:, ind]
-    #s = s[ind]
-    #V = V[:, ind]
+    #normalize
+    for i in range(N):
+        U[:, i] /= np.linalg.norm(U[:, i])
 
-    return U, s, V
+    #get coefficients
+    C = np.zeros((N, N))
+    for i in range(N):
+        C[i] = np.dot(U.T, A[i]).T
 
-def save_vecs(vecs, db):
-    U, s, V = vecs
+    return U, C
+
+def save_vecs(U, C, db):
     U.dump(os.path.join(db, 'U'))
-    V.dump(os.path.join(db, 'V'))
-    s.dump(os.path.join(db, 's'))
-
+    C.dump(os.path.join(db, 'C'))
+    
 def main():
-    ### PARSING COMMAND LINE
     parser = argparse.ArgumentParser(description = 'Create new face recongition database')
     parser.add_argument('pics', type=str, nargs='?', default='training dataset/', help='Path to folder with training pics')    
     parser.add_argument('db', type=str, nargs='?', default='DB/', help='Output folder for database. Will be created if doesn\'t exist')
@@ -75,9 +79,9 @@ def main():
     if not os.path.exists(db):
         os.makedirs(db)
 
-    vecs = compute_eigenfaces(pics, db)
+    U, C = compute_eigenfaces(pics, db)
 
-    save_vecs(vecs, db)
+    save_vecs(U, C, db)
     
 if __name__ == '__main__':
     main()
