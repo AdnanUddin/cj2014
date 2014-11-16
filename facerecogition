@@ -1,0 +1,4 @@
+#bin/bash
+
+python faceRecog.py $1
+
