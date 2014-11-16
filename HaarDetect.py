@@ -3,6 +3,8 @@ import Image, glob, os
 from PIL import ImageEnhance, ImageFilter
 import numpy as np
 
+FaceBox = (170,243)
+
 #returns a PIL imgage obj
 def get_Image(imageFile):
 	filepath,filename = os.path.split(imageFile)
@@ -33,94 +35,97 @@ def img_to_vector(image):
 	return np.array(img)
 
 #compare box to image
-def compare_img_to_noze(imgVec,boxDim,boxOffset,imgDim, boxLength):
-	#tuple markers
-	dark1=0
-	light1=1
-	dark2 =2
-	x=0
-	y=1
-
+def compare_img_to_nose(subImage,NoseBox,NoseBoxOffsets):
 	#total contrast sums
 	darkSum=0
 	lightSum=0
 	
-	#iterage through image column wise
-	for row in range (0,boxDim[dark1]):
-		darkSum += imgVec[boxOffset+(row%imgDim[y])*imgDim[x]+(row/imgDim[y])]
-	for row in range (boxDim[dark1],boxDim[light1]):
-		lightSum += imgVec[boxOffset+(row%imgDim[y])*imgDim[x]+(row/imgDim[y])]
+	x1=NoseBoxOffsets[0]
+	y1=NoseBoxOffsets[1]
+	x2=NoseBoxOffsets[2]
+	y2=NoseBoxOffsets[3]
 
-	for row in range (boxDim[light1],boxDim[dark2]):
-		darkSum += imgVec[boxOffset+(row%imgDim[y])*imgDim[x]+(row/imgDim[y])]
+	noseW = NoseBox[0]
+	noseH = NoseBox[1]
+
+	noseDark = subImage[y1:(y1+noseH),x1:(x1+noseW)]
+	darkSum = sum(sum(noseDark))
+
+	noseLight = subImage[y1:(y1+noseH),(x1+noseW):(x1+noseW*2)]
+	lightSum = sum(sum(noseLight))
+
+	
+	noseDark = subImage[y2:(y2+noseH),x2:(x2+noseW)]
+	lightSum += sum(sum(noseDark))
+
+	noseLight = subImage[y2:(y2+noseH),(x2+noseW):(x2+noseW*2)]
+	darkSum += sum(sum(noseLight))
+
 	return abs(lightSum - darkSum)
 
-def compare_img_to_eyes(imgVec,boxDim,boxOffset,imgDim,boxWidth):
-	#tuple markers
-	dark1=0
-	light1=1
-	dark2 =2
-	x=0
-	y=1
-
+def compare_img_to_eyes(subImage,EyesBox,EyesBoxOffsets):
 	#total contrast sums
 	darkSum=0
 	lightSum=0
 	
-	#iterate though image row
-	for col in range(0,boxDim[dark1]):
-		darkSum += imgVec[boxOffset+(col%boxWidth)+(imgDim[x]* (col/boxWidth))]
+	x=EyesBoxOffsets[0]
+	y=EyesBoxOffsets[1]
+	darkH = (EyesBox[0]-EyesBox[2])/2
+	lightH = EyesBox[2]
+	eyesW = EyesBox[0]
 
-	for col in range(boxDim[dark1],boxDim[light1]):
-		darkSum += imgVec[boxOffset+(col%boxWidth)+(imgDim[x]* (col/boxWidth))]
+	eyesDark1 = subImage[y:(y+darkH),x:(x+eyesW)]
+	darkSum = sum(sum(eyesDark1))
 
-	for col in range(boxDim[light1],boxDim[dark2]):
-		darkSum += imgVec[boxOffset+(col%boxWidth)+(imgDim[x]* (col/boxWidth))]
+	eyesLight = subImage[(y+darkH):(y+darkH+lightH),x:(x+eyesW)]
+	lightSum = sum(sum(eyesLight))
+
+	eyesDark2 = subImage[(y+darkH+lightH):(y+darkH*2+lightH),x:(x+eyesW)]
+	lightSum = sum(sum(eyesDark2))
 
 	return abs(lightSum - darkSum)
 
 def get_best_rect(image):
-	x = 0
-	y = 1
+	x=0	
+	cols = 1
 	
-	FaceBox = (170,243)
-	NoseBox = (30,35)
-	NoseBoxOffsets = (385,685,1050)
-	EyesBox = (90,10)
-	EyesBoxOffsets = (900,1800,2700)
+	NoseBox = (15,30)
+	NoseBoxOffsets = (0,116,FaceBox[0]-NoseBox[0]*2,116)
+
+	EyesBox = (90,30,10)
+	EyesBoxOffsets = (30,116)
 
 	imgVector = img_to_vector(image)
 	imgDimensions = imgVector.shape
 	
 	print 'image has size: ' + str(imgDimensions)
-	print imgVector[44,56]
 
 	BestScore =0.0
 	BestScoreIndex =0
-	for offset in range(0,imgDimensions[x]-FaceBox[x]):	
-		score = compare_img_to_eyes(imgVector,EyesBoxOffsets,offset,imgDimensions,EyesBox[x])
-		score += compare_img_to_nose(imgVector,NozeBoxOffsets,offset,imgDimensions,NozeBox[x])
+	for offset in range(0,imgDimensions[cols]-FaceBox[0]):	
+		subImage = imgVector[:,offset:(offset+FaceBox[x])]
+	#	score = compare_img_to_eyes(subImage,EyesBox,EyesBoxOffsets)
+		score = compare_img_to_nose(subImage,NoseBox,NoseBoxOffsets)
 		if(score>BestScore):
 			BestScore = score
 			BestScoreOffset = offset
+			#print BestScoreOffset
 
 	return BestScoreOffset
 
 #crops an image
-def crop_image(image,offset):
-	x=0
-	y=1
-	cropped = image.crop(offset,0,FaceBox[x],FaceBox[y])
+def crop_image(image,offset,width,height):
+	cropped = image.crop((offset,0,width+offset,height))
 	return cropped
 
 #get cropped face
 def getFace(image):
 	offset = get_best_rect(image)
-	cropped = crop_image(image,offset)
+	cropped = crop_image(image,offset,FaceBox[0],FaceBox[1])
 	return cropped
 
 if(__name__ == '__main__'):
 	
 	img = get_Image('face2.gif')
 	face = getFace(img)
-	face.save('croppedFace.png','PNG')
+	face.save('croppedFace2.png','PNG')
