@@ -1,9 +1,33 @@
 #!bin/python
-import Image, glob, os
-from PIL import ImageEnhance, ImageFilter
+import glob, os
+from PIL import ImageEnhance, ImageFilter, Image
 import numpy as np
 
 FaceBox = (170,243)
+
+
+def normalizeImage(s):
+	img_v = np.array(s)
+	max_pixel = img_v.max()
+	min_pixel = img_v.min()
+
+	(width, height) = s.size
+
+
+
+	print 'max: %s , min: %s' %(max_pixel,min_pixel)
+	new_max = 255.0
+	new_min = 0.0
+	img_v = img_v - min_pixel
+
+	img_v =  img_v * (new_max - new_min)/(max_pixel - min_pixel) +  new_min
+
+	s = Image.fromarray(img_v.astype('uint8'));		
+
+	print "saving file"
+	# s.save('%s.gif'%img_name)
+	return s
+
 
 #returns a PIL imgage obj
 def get_Image(imageFile):
@@ -116,6 +140,8 @@ def get_best_rect(image):
 #crops an image
 def crop_image(image,offset,width,height):
 	cropped = image.crop((offset,0,width+offset,height))
+	# cropped = image.crop((offset,0,width,height))
+
 	return cropped
 
 #get cropped face
@@ -126,6 +152,7 @@ def getFace(image):
 
 if(__name__ == '__main__'):
 	
-	img = get_Image('face2.gif')
+	img = get_Image("./test_picture/1_7_.gif")
 	face = getFace(img)
+	face = normalizeImage(face)
 	face.save('croppedFace2.png','PNG')
