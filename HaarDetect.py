@@ -172,6 +172,14 @@ def getFace(image):
 	cropped = crop_image(image,offset,FaceBox[0],FaceBox[1])
 	return cropped
 
+def haar_main(image_file_path):
+	img = Image.open(image_file_path)
+	face = normalizeImage(img)
+	face = smooth_Image(face)
+	face = sharpen_Image(face,30)
+	face = blur_Image(face)
+	return getFace(face)
+
 if(__name__ == '__main__'):
 	
 	files = glob.glob("training dataset"+"/*.gif")

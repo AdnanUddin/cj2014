@@ -12,20 +12,11 @@ eigen_faces_images_by_pixels_relative_path = "U"
 eigenface_coefficeints_database_relative_path = "C"
 eigenface_to_person_database_relative_path = "I.json"
 
-
-def look_for_x(db, image_path):
+def _look_for_x_core(db, difference_face):
     average_face_image_path = db + "/" + average_relative_face_image_path
     eigen_faces_images_by_pixels_path = db + "/" + eigen_faces_images_by_pixels_relative_path
     eigenface_to_person_json_path = db + "/" + eigenface_to_person_database_relative_path
     eigenface_coefficients_database_path = db + "/" + eigenface_coefficeints_database_relative_path
-
-    #print "average_face_image_path: " + average_face_image_path
-    #print "eigen_faces_images_by_pixels_path: " + eigen_faces_images_by_pixels_path
-    #print "eigenface_to_person_json_path: " + eigenface_to_person_json_path
-    #print "eigenface_coefficients_database_path: " + eigenface_coefficients_database_path
-
-    avg_pixels = list(Image.open(average_face_image_path).getdata()) #fetch the average image
-    difference_face = create_difference_face(image_path, avg_pixels) #create a difference face image
 
     difference_face_vector = np.reshape(difference_face, SIZE_X * SIZE_Y) #turn that difference face into a vector
 
@@ -57,6 +48,28 @@ def look_for_x(db, image_path):
     print('DIST: %i' % min_dist)
     return eigenface_to_person_list[min_index] #return the person
 
+def look_for_x_by_path(db, image_path):
+    average_face_image_path = db + "/" + average_relative_face_image_path
+    eigen_faces_images_by_pixels_path = db + "/" + eigen_faces_images_by_pixels_relative_path
+    eigenface_to_person_json_path = db + "/" + eigenface_to_person_database_relative_path
+    eigenface_coefficients_database_path = db + "/" + eigenface_coefficeints_database_relative_path
+
+    avg_pixels = list(Image.open(average_face_image_path).getdata()) #fetch the average image
+    difference_face = create_difference_face_by_path(image_path, avg_pixels) #create a difference face image
+
+    return _look_for_x_core(db, difference_face)
+
+def look_for_x_by_object(db, num_py_image):
+    average_face_image_path = db + "/" + average_relative_face_image_path
+    eigen_faces_images_by_pixels_path = db + "/" + eigen_faces_images_by_pixels_relative_path
+    eigenface_to_person_json_path = db + "/" + eigenface_to_person_database_relative_path
+    eigenface_coefficients_database_path = db + "/" + eigenface_coefficeints_database_relative_path
+
+    avg_pixels = list(Image.open(average_face_image_path).getdata()) #fetch the average image
+    difference_face = create_difference_face_by_object(num_py_image, avg_pixels) #create a difference face image
+
+    return _look_for_x_core(db, difference_face)
+
 def dump_to_picture(image, name):
     im = Image.new('L', (SIZE_X, SIZE_Y))
     im.putdata(image)
@@ -74,9 +87,11 @@ def compute_error(vector_a, vector_b):
     return (vector_a - vector_b)**2
     #return compute_percentage_error(vector_a, vector_b)
 
-def create_difference_face(image_path, avg_pixels):
-    im = Image.open(image_path)    
-    pixels = list(im.getdata())
+def create_difference_face_by_path(image_path, avg_pixels):
+    return create_difference_face_by_object(Image.open(image_path), avg_pixels)
+
+def create_difference_face_by_object(numpy_image, avg_pixels):
+    pixels = list(numpy_image)
     new_pixels = [pixels[i] - p for i, p in enumerate(avg_pixels)]
     return new_pixels
 
@@ -95,7 +110,7 @@ def main():
 
     print ("Utilizing database: " + db)
 
-    print look_for_x(db, image_path)
+    #print look_for_x(db, image_path)
 
 if __name__ == '__main__':
     main()
