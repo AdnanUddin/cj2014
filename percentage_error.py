@@ -12,7 +12,7 @@ def compute_percentage_error(x, y):
         e += diff[i]
 
     e = ((e * 100)/ 255)
-    print(e)
+    #print(e)
     return e
 
 def compute_error_matrix(x, M):

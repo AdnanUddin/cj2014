@@ -1,4 +1,8 @@
 cj2014
 ======
 
-We encourage all forms of HH and discourage any encouragement of HS.
+To recognize a face use the following command:
+	./facerecognition subjectID_imageID_.gif
+
+
+
