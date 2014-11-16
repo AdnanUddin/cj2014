@@ -21,7 +21,6 @@ def look_for_x(db, image_path):
 
 	print "average_face_image_path: " + average_face_image_path
 	print "eigen_faces_images_by_pixels_path: " + eigen_faces_images_by_pixels_path
-	print "eigenface_database_path: " + eigenface_database_path
 	print "eigenface_to_person_json_path: " + eigenface_to_person_json_path
 	print "eigenface_coefficients_database_path: " + eigenface_coefficients_database_path
 
@@ -34,30 +33,23 @@ def look_for_x(db, image_path):
 
 	C = np.load(eigenface_coefficients_database_path) #load the coefficients that we will need
 
-	input_coefficients = compute_eigenvector_coefficients(difference_face_vector, U)
+	input_coefficients = np.dot(U.T, difference_face_vector)
 
 	coefficients_error_list = list()
 
 	lowest_error = -1
 	lowest_error_index = None
 
-	itter_counter = 0;
 	for coefficient_vector in C: #for each image in our database, we compare their weightings to our weighting. and return the index of the person with lowest error
 		error = my_error(coefficient_vector, input_coefficients)
+		print error
 		if(lowest_error < error):
 			lowest_error_index = itter_counter
 			lowest_error = error
-		itter_counter = itter_counter + 1
 		coefficients_error_list.append(error)
  
 	eigenface_to_person_list = json.loads(open(eigenface_to_person_json_path).read()) #load a json file that maps the image number to a person
 	return eigenface_to_person_list[lowest_error_index] #return the person
-
-def compute_eigenvector_coefficients(input_image_vector, eigen_vector_array):
-	coefficient_list = list()
-	for eigen_vector in eigen_vector_array.T:
-		coefficient_list.append(np.dot(eigen_vector, input_image_vector))
-	return coefficient_list
 
 def dump_to_picture(image, name):
 	im = Image.new('L', (SIZE_X, SIZE_Y))
